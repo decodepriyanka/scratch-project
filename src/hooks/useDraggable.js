@@ -28,10 +28,11 @@ export const useDraggable = (checkForOverlap, itemRefs) => {
 
       const startX = rect?.left;
       const startY = rect?.top;
-
+      let newX;
+      let newY;
       const handleMouseMove = (e) => {
-        const newX = e.clientX - offsetX;
-        const newY = e.clientY - offsetY;
+        newX = e.clientX - offsetX;
+        newY = e.clientY - offsetY;
 
         if (itemRef) {
           itemRef.style.left = `${newX}px`;
@@ -43,9 +44,9 @@ export const useDraggable = (checkForOverlap, itemRefs) => {
         document.removeEventListener("mousemove", handleMouseMove);
         document.removeEventListener("mouseup", handleMouseUp);
 
-        const finalRect = itemRef?.getBoundingClientRect();
-        const left = finalRect?.left <= 200 ? 150 : finalRect?.left;
-        const newPosition = { x: left, y: finalRect?.top };
+        // const finalRect = itemRef?.getBoundingClientRect();
+        // const left = finalRect?.left <= 200 ? 150 : finalRect?.left;
+        const newPosition = { x: newX, y: newY };
         const currentitemRef = itemRefs?.current[id]?.current;
         const currentRect = currentitemRef?.getBoundingClientRect();
 
