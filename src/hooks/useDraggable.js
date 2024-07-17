@@ -3,38 +3,48 @@ import { useCallback, useState } from "react";
 export const useDraggable = (checkForOverlap, itemRefs) => {
   const [clonedEl, setClonedEl] = useState([]);
 
-  const updateItemPosition = (newPosition, name, id, type) => {
+  const updateItemPosition = (newPosition, id) => {
     setClonedEl((prev) => {
       const updatedArray = prev.map((item) =>
-        item.id === id ? { ...item, position: newPosition } : item
+        item.id === id ? { ...item, position: newPosition, id: id } : item
       );
-
-      const isTimestamp = !isNaN(new Date(id).getTime());
-
-      if (!isTimestamp && !updatedArray.some((item) => item.id === id)) {
-        return [...prev, { name, position: newPosition, id: Date.now(), type }];
-      }
-
       return updatedArray;
     });
   };
+
   const handleDragStart = useCallback(
     (name, id, e, type, sidebarRef) => {
       document.body.style.userSelect = "none";
-      const itemRef = itemRefs.current[id].current;
+      const itemRef = itemRefs.current[id]?.current;
       const rect = itemRef?.getBoundingClientRect();
       const offsetX = e.clientX - rect?.left;
       const offsetY = e.clientY - rect?.top;
 
       const startX = rect?.left;
       const startY = rect?.top;
-      let newX;
-      let newY;
+
+      const elementExists = clonedEl.some((item) => item.id === id);
+      const isTimestamp = !isNaN(new Date(id).getTime());
+      let newElId = isTimestamp ? id : Date.now();
+      if (!elementExists) {
+        setClonedEl((prev) => [
+          ...prev,
+          { name, position: { x: newX, y: newY }, id: newElId, type },
+        ]);
+      }
+
+      let newX = startX;
+      let newY = startY;
+
       const handleMouseMove = (e) => {
         newX = e.clientX - offsetX;
         newY = e.clientY - offsetY;
-
+        const newPosition = {
+          x: newX,
+          y: newY,
+        };
         if (itemRef) {
+          updateItemPosition(newPosition, newElId);
           itemRef.style.left = `${newX}px`;
           itemRef.style.top = `${newY}px`;
         }
@@ -43,17 +53,13 @@ export const useDraggable = (checkForOverlap, itemRefs) => {
       const handleMouseUp = () => {
         document.removeEventListener("mousemove", handleMouseMove);
         document.removeEventListener("mouseup", handleMouseUp);
-
-        // const finalRect = itemRef?.getBoundingClientRect();
-        // const left = finalRect?.left <= 200 ? 150 : finalRect?.left;
         const newPosition = { x: newX, y: newY };
-        const currentitemRef = itemRefs?.current[id]?.current;
-        const currentRect = currentitemRef?.getBoundingClientRect();
+        const currentItemRef = itemRefs?.current[id]?.current;
+        const currentRect = currentItemRef?.getBoundingClientRect();
 
         let sidebarOverlap = false;
         if (sidebarRef) {
           const otherRect = sidebarRef?.current?.getBoundingClientRect();
-
           sidebarOverlap =
             currentRect?.right >= otherRect?.left &&
             currentRect?.left <= otherRect?.right &&
@@ -62,16 +68,19 @@ export const useDraggable = (checkForOverlap, itemRefs) => {
         }
 
         if (sidebarOverlap) {
-          setClonedEl((prev) => {
-            const updatedArray = prev.filter((item) => item.id !== id);
-            return updatedArray;
-          });
+          setClonedEl((prev) => prev.filter((item) => item.id !== id));
         } else {
-          if (checkForOverlap(id, itemRefs)) {
+          if (checkForOverlap(newElId, itemRefs, clonedEl)) {
+            const newPosition = {
+              x: startX,
+              y: startY,
+            };
+
+            updateItemPosition(newPosition, newElId);
             itemRef.style.left = `${startX}px`;
             itemRef.style.top = `${startY}px`;
           } else {
-            updateItemPosition(newPosition, name, id, type);
+            updateItemPosition(newPosition, newElId);
           }
         }
       };
@@ -79,7 +88,7 @@ export const useDraggable = (checkForOverlap, itemRefs) => {
       document.addEventListener("mousemove", handleMouseMove);
       document.addEventListener("mouseup", handleMouseUp);
     },
-    [itemRefs, clonedEl]
+    [itemRefs, clonedEl, checkForOverlap]
   );
 
   return { handleDragStart, clonedEl };

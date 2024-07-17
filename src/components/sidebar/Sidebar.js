@@ -11,7 +11,7 @@ const Sidebar = React.forwardRef(
         className="w-60 flex-none h-full overflow-y-auto flex flex-col items-start p-2 border-r border-gray-200"
         ref={sidebarRef}
       >
-        <div className="mb-4">
+        <div className="mb-4 w-full">
           <div className="font-bold mb-2">MOTION</div>
           {motionComponents.map(({ name, id }) => {
             return (
@@ -32,7 +32,7 @@ const Sidebar = React.forwardRef(
             );
           })}
         </div>
-        <div className="mb-4">
+        <div className="mb-4 w-full">
           <div className="font-bold mb-2">LOOKS</div>
           {looksComponents.map(({ name, id }) => {
             return (
@@ -81,7 +81,7 @@ const Sidebar = React.forwardRef(
                       e.stopPropagation();
                       executeCommand(name);
                     }}
-                    className="min-w-max text-center cursor-pointer"
+                    className="w-48 text-center cursor-pointer"
                   >
                     {name}
                   </div>

@@ -34,12 +34,9 @@ export const executeCommand = (command, actionsHistory) => {
   } else if (command.includes("Move Y")) {
     newY += parseInt(command.split(" ")[2], 10);
     if (newY + elementRect.height > viewportHeight) {
-      console.log("+++NEW 104", newY, viewportHeight);
       newY = viewportHeight - elementRect.height;
-      console.log("+++NEW 206", newY);
     } else if (newY < 0) {
       newY = 0;
-      console.log("+++NEW 209", newY);
     }
   } else if (command.includes("Turn anticlockwise")) {
     newRotation -= parseInt(command.split(" ")[2], 10);
